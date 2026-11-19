@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conjugation Recitation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
+<style>
+body { margin: 0; }
+[hidden] { display: none !important; }
+/* Layout: one centred column; tabs switch between the mastery path (classic singulier / pluriel grid) and a rapid-fire drill */
+:root {
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --ink: #17213a;
+  --muted: #5b6680;
+  --line: #d6dbe6;
+  --accent: #2346b8;
+  --accent-ink: #ffffff;
+  --good: #1d7a46;
+  --good-bg: #e3f4ea;
+  --bad: #b3261e;
+  --bad-bg: #fbe7e5;
+  --warn-bg: #eef2fd;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10141f; --surface: #1a2030; --ink: #e8ecf5; --muted: #9aa5bd; --line: #2f374b;
+    --accent: #7f9bff; --accent-ink: #0e1427; --good: #6fd39a; --good-bg: #173326;
+    --bad: #ff8a80; --bad-bg: #3a1c1b; --warn-bg: #1d2640; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10141f; --surface: #1a2030; --ink: #e8ecf5; --muted: #9aa5bd; --line: #2f374b;
+  --accent: #7f9bff; --accent-ink: #0e1427; --good: #6fd39a; --good-bg: #173326;
+  --bad: #ff8a80; --bad-bg: #3a1c1b; --warn-bg: #1d2640; color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 22px; }
+header h1 {
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(1.8rem, 5vw, 2.5rem);
+  letter-spacing: -0.02em; margin: 0; text-wrap: balance;
+}
+header p { margin: 4px 0 0; color: var(--muted); }
+
+.tabs { display: flex; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; width: fit-content; max-width: 100%; }
+.tab { font: inherit; font-weight: 700; padding: 9px 18px; border-radius: 9px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.panel { display: grid; gap: 22px; }
+
+.rule { border: 2px solid var(--accent); border-radius: 10px; padding: 12px 16px; background: var(--warn-bg); }
+.rule strong { color: var(--accent); }
+
+.picker { display: flex; flex-wrap: wrap; gap: 14px; align-items: end; }
+.field { display: grid; gap: 4px; }
+.label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+select {
+  font: inherit; font-size: 1.05rem; padding: 10px 12px; border-radius: 8px;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); min-width: 180px;
+}
+select:disabled { opacity: 0.6; cursor: not-allowed; }
+.tense-tag { padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); font-weight: 700; }
+.lock-note { align-self: center; padding: 8px 12px; border-radius: 8px; background: var(--bad-bg); font-size: 0.95rem; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  padding: 22px clamp(16px, 4vw, 28px); display: grid; gap: 18px;
+}
+.card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; margin: 0; }
+.card-head h2 em { font-style: normal; color: var(--accent); }
+.attempts { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.9rem; }
+.dots { display: flex; gap: 5px; }
+.dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--line); }
+.dot.used { background: var(--muted); border-color: var(--muted); }
+
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.steps li { padding: 8px 10px; border-radius: 8px; background: var(--bg); color: var(--muted); font-size: 0.86rem; font-weight: 700; display: grid; gap: 4px; align-content: start; }
+.steps li.current { background: var(--warn-bg); color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
+.steps li.done { color: var(--good); background: var(--good-bg); }
+.pips { display: flex; gap: 4px; }
+.pip { width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; }
+.pip.on { background: currentColor; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; }
+.row { display: grid; grid-template-columns: 5.6rem 1fr; align-items: center; gap: 10px; min-width: 0; }
+.pron { font-weight: 700; text-align: right; color: var(--muted); }
+.cell { display: grid; gap: 3px; min-width: 0; }
+input.inp {
+  font: inherit; font-size: 1.15rem; padding: 9px 11px; border-radius: 8px; width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+}
+input.inp:focus { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); border-color: var(--accent); }
+input.inp.right { border-color: var(--good); background: var(--good-bg); }
+input.inp.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.model { font-size: 0.95rem; color: var(--accent); font-weight: 700; }
+.model.hid { color: var(--muted); font-weight: 400; font-style: italic; }
+.answer { font-size: 0.92rem; color: var(--good); font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+.formimg { vertical-align: middle; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; pointer-events: none; }
+
+.lines { display: grid; gap: 16px; }
+.lines-row { display: grid; gap: 8px; }
+.lines-head { font-size: 1.1rem; }
+.lines-head b { color: var(--accent); }
+.lines-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+
+.accents { display: flex; flex-wrap: wrap; gap: 6px; }
+.accents button {
+  font: inherit; font-size: 1.15rem; width: 44px; height: 44px; border-radius: 8px; cursor: pointer;
+  border: 1.5px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.accents button:hover { border-color: var(--accent); }
+.accents button:focus-visible, .btn:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  font: inherit; font-weight: 700; font-size: 1.05rem; padding: 12px 22px; border-radius: 10px; cursor: pointer;
+  border: 2px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+}
+.btn.ghost { background: transparent; color: var(--accent); }
+
+.feedback { border-radius: 10px; padding: 14px 16px; font-size: 1.05rem; }
+.feedback.info { background: var(--warn-bg); }
+.feedback.good { background: var(--good-bg); color: var(--good); font-weight: 700; }
+.feedback.bad { background: var(--bad-bg); }
+.feedback strong { display: block; margin-bottom: 2px; }
+.note { color: var(--muted); font-size: 0.88rem; margin: 0; }
+
+/* Rapid fire */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.chip input { accent-color: var(--accent); }
+.prompt { display: flex; align-items: baseline; justify-content: center; gap: 14px; flex-wrap: wrap; padding: 10px 0 4px; }
+.prompt .pr { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.4rem, 9vw, 3.6rem); line-height: 1; }
+.prompt .inf { font-size: 1.25rem; padding: 4px 14px; border-radius: 999px; background: var(--warn-bg); color: var(--accent); font-weight: 700; }
+#drillInput { font-size: 1.5rem; text-align: center; max-width: 380px; justify-self: center; }
+.stats { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stats b { color: var(--ink); }
+.big { font-family: var(--font-display); font-weight: 800; font-size: 3rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.missed { margin: 0; padding-left: 1.2em; }
+.center { justify-self: center; }
+
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+  .row { grid-template-columns: 4.6rem 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .feedback { animation: rise .25s ease-out; }
+  @keyframes rise { from { transform: translateY(4px); opacity: .6; } to { transform: none; opacity: 1; } }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Conjugation Recitation</h1>
+    <p>Practice French conjugations by typing them from memory, again and again.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabTables" aria-selected="true" aria-controls="panelTables">Tables</button>
+    <button class="tab" role="tab" id="tabDrill" aria-selected="false" aria-controls="panelDrill">Rapid fire</button>
+  </div>
+
+  <!-- ================= TABLES ================= -->
+  <section class="panel" id="panelTables" role="tabpanel" aria-labelledby="tabTables">
+    <div class="rule" id="ruleText"></div>
+
+    <div class="picker">
+      <div class="field">
+        <label class="label" for="verb">Verbe</label>
+        <select id="verb"></select>
+      </div>
+      <div class="field">
+        <span class="label">Temps</span>
+        <div class="tense-tag">Présent de l'indicatif</div>
+      </div>
+      <div class="lock-note" id="lockNote" hidden>🔒 Verb menu locked until you master <b id="lockVerb"></b>.</div>
+    </div>
+
+    <section class="card" aria-live="polite">
+      <div class="card-head">
+        <h2><em id="verbTitle">être</em> au présent</h2>
+        <div class="attempts" id="attempts"><span id="attemptText">Try 1 of 3</span><div class="dots" id="dots"></div></div>
+      </div>
+
+      <ol class="steps" id="steps"></ol>
+
+      <div id="work"></div>
+
+      <div>
+        <div class="label" style="margin-bottom:6px">Accents</div>
+        <div class="accents" data-accents></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="check">Check</button>
+        <button class="btn ghost" id="replay" hidden>🔊 Listen again</button>
+        <button class="btn" id="next" hidden>Continue</button>
+      </div>
+
+      <div class="feedback info" id="feedback"></div>
+    </section>
+
+    <p class="note">Capital letters, extra spaces and the style of apostrophe don't count. Accents do. Typing the pronoun too is fine.</p>
+  </section>
+
+  <!-- ================= RAPID FIRE ================= -->
+  <section class="panel" id="panelDrill" role="tabpanel" aria-labelledby="tabDrill" hidden>
+    <section class="card" id="drillSetup">
+      <div class="card-head"><h2>Rapid fire</h2></div>
+      <p style="margin:0">You'll see one pronoun and one verb at a time. Type the verb form and press Enter. If you miss one, type the correct answer to continue, and it will come back later in the round.</p>
+      <div class="field">
+        <span class="label">Verbs to include</span>
+        <div class="chips" id="drillVerbs"></div>
+      </div>
+      <div class="field">
+        <label class="label" for="drillLength">Round length</label>
+        <select id="drillLength"></select>
+      </div>
+      <div class="actions"><button class="btn" id="drillStart">Start</button></div>
+      <div class="feedback bad" id="drillSetupMsg" hidden></div>
+    </section>
+
+    <section class="card" id="drillPlay" hidden aria-live="polite">
+      <div class="stats"><span>Left: <b id="drillLeft">0</b></span><span>Right first time: <b id="drillScore">0</b></span></div>
+      <div class="prompt"><span class="pr" id="drillPron">nous</span><span class="inf" id="drillInf">faire</span></div>
+      <input class="inp" id="drillInput" autocomplete="off" autocapitalize="off" spellcheck="false" lang="fr" aria-label="Your answer">
+      <div class="accents center" data-accents></div>
+      <div class="feedback info" id="drillFeedback">Type the form and press Enter.</div>
+      <div class="actions center"><button class="btn" id="drillSubmit">Enter</button><button class="btn ghost" id="drillListen" hidden>🔊 Hear it again</button><button class="btn ghost" id="drillQuit">Stop round</button></div>
+    </section>
+
+    <section class="card" id="drillResults" hidden>
+      <div class="card-head"><h2>Round finished</h2></div>
+      <div><div class="big" id="resScore">0 / 0</div><div class="note">right the first time</div></div>
+      <div class="stats" style="justify-content:start"><span>Time: <b id="resTime">0:00</b></span></div>
+      <div id="resMissed"></div>
+      <div class="actions"><button class="btn" id="drillAgain">Play again</button><button class="btn ghost" id="drillBack">Change settings</button></div>
+    </section>
+  </section>
+</div>
+
+<script>
+/* ============================================================
+   TEACHER SETTINGS: change these numbers to tune the practice.
+   ============================================================ */
+const SETTINGS = {
+  STREAK_TO_MASTER: 3,    // perfect runs in a row needed to master a verb
+  CORRECTION_LINES: 3,    // how many times to retype each missed form
+  FADE_STEPS: [0, 2, 4],  // how many forms are hidden in each copying step
+  MAX_TRIES: 3,           // tries per run from memory
+  DRILL_LENGTHS: [10, 20, 30]
+};
+
+/* TEACHER: edit the answer key here.
+   Order: je, tu, il/elle/on, nous, vous, ils/elles.
+   "elide: true" means "je" becomes "j'" (j'ai). */
+const VERBS = {
+  "être":    { elide: false, forms: ["suis", "es", "est", "sommes", "êtes", "sont"] },
+  "avoir":   { elide: true,  forms: ["ai", "as", "a", "avons", "avez", "ont"] },
+  "aller":   { elide: false, forms: ["vais", "vas", "va", "allons", "allez", "vont"] },
+  "faire":   { elide: false, forms: ["fais", "fais", "fait", "faisons", "faites", "font"] },
+  "parler":  { elide: false, forms: ["parle", "parles", "parle", "parlons", "parlez", "parlent"] },
+  "finir":   { elide: false, forms: ["finis", "finis", "finit", "finissons", "finissez", "finissent"] },
+  "prendre": { elide: false, forms: ["prends", "prends", "prend", "prenons", "prenez", "prennent"] },
+  "venir":   { elide: false, forms: ["viens", "viens", "vient", "venons", "venez", "viennent"] }
+};
+const ACCENTS = ["é","è","ê","à","â","ç","ù","û","î","ï","ô"];
+
+/* ---------- shared helpers ---------- */
+const $ = id => document.getElementById(id);
+const VERB_NAMES = Object.keys(VERBS);
+const PREFIXES = [["j'", "je "], ["tu "], ["il ", "elle ", "on "], ["nous "], ["vous "], ["ils ", "elles "]];
+let lastInput = null;
+
+function tablePronouns(v) { return [VERBS[v].elide ? "j'" : "je", "tu", "il / elle / on", "nous", "vous", "ils / elles"]; }
+function shortPronoun(v, i) { return [VERBS[v].elide ? "j'" : "je", "tu", "il", "nous", "vous", "ils"][i]; }
+function withPron(p, form) { return p === "j'" ? "j'" + form : p + " " + form; }
+
+/* Draws a conjugated form as a picture so it can be read but not copied.
+   colorVar is a theme colour token; alt describes the image for screen readers. */
+function formImage(text, colorVar, alt, size = 17) {
+  const color = getComputedStyle(document.documentElement).getPropertyValue(colorVar).trim() || "#2346b8";
+  const font = `700 ${size}px "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif`;
+  const dpr = Math.max(2, window.devicePixelRatio || 1);
+  const c = document.createElement("canvas"), ctx = c.getContext("2d");
+  ctx.font = font;
+  const w = Math.ceil(ctx.measureText(text).width) + 4, h = Math.ceil(size * 1.45);
+  c.width = w * dpr; c.height = h * dpr;
+  ctx.scale(dpr, dpr); ctx.font = font; ctx.fillStyle = color; ctx.textBaseline = "middle";
+  ctx.fillText(text, 2, h / 2 + 1);
+  const img = new Image();
+  img.src = c.toDataURL("image/png"); img.width = w; img.height = h;
+  img.alt = alt; img.draggable = false; img.className = "formimg";
+  img.addEventListener("contextmenu", e => e.preventDefault());
+  return img;
+}
+
+/* Pasting and dropping text into answer boxes is turned off. */
+function blockPaste(inp) {
+  const stop = e => {
+    e.preventDefault();
+    const msg = "<strong>Pasting is turned off.</strong>Type each form yourself: that's how it sticks.";
+    if (!$("panelDrill").hidden) drillFeedback("info", msg); else setFeedback("info", msg);
+  };
+  inp.addEventListener("paste", stop);
+  inp.addEventListener("drop", stop);
+}
+function normalize(s, i) {
+  let t = s.replace(/[’‘ʼ`]/g, "'").toLowerCase().trim().replace(/\s+/g, " ");
+  for (const p of PREFIXES[i]) if (t.startsWith(p)) { t = t.slice(p.length).trim(); break; }
+  return t.normalize("NFC");
+}
+function isRight(value, v, i) { return normalize(value, i) === VERBS[v].forms[i].normalize("NFC"); }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function rnd(a) { return a[Math.floor(Math.random() * a.length)]; }
+function trackInput(inp) { inp.addEventListener("focus", () => lastInput = inp); }
+
+function buildAccents() {
+  document.querySelectorAll("[data-accents]").forEach(box => {
+    ACCENTS.forEach(ch => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = ch; b.setAttribute("aria-label", "Insert " + ch);
+      b.addEventListener("mousedown", e => e.preventDefault());
+      b.addEventListener("click", () => {
+        const inp = lastInput;
+        if (!inp || inp.readOnly || !document.body.contains(inp)) return;
+        const s = inp.selectionStart ?? inp.value.length, e = inp.selectionEnd ?? inp.value.length;
+        inp.value = inp.value.slice(0, s) + ch + inp.value.slice(e);
+        inp.focus(); inp.setSelectionRange(s + 1, s + 1);
+      });
+      box.append(b);
+    });
+  });
+}
+
+function speak(v) {
+  return speakText(VERBS[v].forms.map((f, i) => withPron(shortPronoun(v, i), f)).join(". ") + ".");
+}
+function speakText(text) {
+  if (!("speechSynthesis" in window)) return false;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "fr-FR"; u.rate = 0.8;
+  const fr = speechSynthesis.getVoices().find(x => x.lang && x.lang.toLowerCase().startsWith("fr"));
+  if (fr) u.voice = fr;
+  speechSynthesis.speak(u);
+  return true;
+}
+
+/* ============================================================
+   TABLES: copy -> fading -> from memory (streak) -> lines
+   ============================================================ */
+const N = SETTINGS.STREAK_TO_MASTER, FADE = SETTINGS.FADE_STEPS;
+const KEY = "cr-state-v2";
+let S = { verb: VERB_NAMES[0], phase: "learn", stage: 0, streak: 0, wrong: [], started: false, mastered: [] };
+try {
+  const saved = JSON.parse(localStorage.getItem(KEY));
+  if (saved && VERBS[saved.verb]) S = Object.assign(S, saved);
+} catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+let tries = 0;
+let fadeOrder = shuffle([0, 1, 2, 3, 4, 5]);
+
+const verbSel = $("verb"), work = $("work"), feedback = $("feedback");
+const checkBtn = $("check"), replayBtn = $("replay"), nextBtn = $("next");
+let nextAction = null;
+
+$("ruleText").innerHTML = `<strong>How to master a verb:</strong> copy the table, fill it in as forms disappear, then type it perfectly <b>${N} times in a row</b> from memory. Any error resets your streak, and you'll write each missed form ${SETTINGS.CORRECTION_LINES} times. The verb menu stays locked until you master the verb.`;
+VERB_NAMES.forEach(v => verbSel.add(new Option(v, v)));
+for (let i = 0; i < SETTINGS.MAX_TRIES; i++) { const d = document.createElement("span"); d.className = "dot"; $("dots").append(d); }
+
+function isLocked() { return S.started && !S.mastered.includes(S.verb); }
+function setFeedback(kind, html) { feedback.className = "feedback " + kind; feedback.innerHTML = html; }
+
+function renderMenu() {
+  [...verbSel.options].forEach(o => o.textContent = o.value + (S.mastered.includes(o.value) ? "  ✓" : ""));
+  verbSel.value = S.verb;
+  verbSel.disabled = isLocked();
+  $("lockNote").hidden = !isLocked();
+  $("lockVerb").textContent = S.verb;
+}
+
+function renderSteps() {
+  const labels = FADE.map((h, k) => k === 0 && h === 0 ? "Copy" : `${h} hidden`).concat(["From memory"]);
+  const cur = S.phase === "learn" ? S.stage : FADE.length;
+  const streakShown = S.phase === "mastered" ? N : S.streak;
+  $("steps").innerHTML = labels.map((l, k) => {
+    const cls = S.phase === "mastered" || k < cur ? "done" : k === cur ? "current" : "";
+    const pips = k === FADE.length ? `<span class="pips">${Array.from({ length: N }, (_, j) => `<span class="pip${j < streakShown ? " on" : ""}"></span>`).join("")}</span>` : "";
+    return `<li class="${cls}">${k + 1} · ${l}${pips}</li>`;
+  }).join("");
+}
+
+function renderTries() {
+  $("attempts").hidden = S.phase !== "test";
+  $("attemptText").textContent = `Try ${Math.min(tries + 1, SETTINGS.MAX_TRIES)} of ${SETTINGS.MAX_TRIES}`;
+  [...$("dots").children].forEach((d, i) => d.classList.toggle("used", i < tries));
+}
+
+function makeInput(id) {
+  const inp = document.createElement("input");
+  inp.className = "inp"; inp.id = id; inp.autocomplete = "off"; inp.setAttribute("autocapitalize", "off");
+  inp.spellcheck = false; inp.lang = "fr";
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+  trackInput(inp);
+  blockPaste(inp);
+  return inp;
+}
+
+function buildGrid() {
+  const v = S.verb, p = tablePronouns(v), forms = VERBS[v].forms;
+  const hidden = S.phase === "learn" ? fadeOrder.slice(0, FADE[S.stage]) : [];
+  work.className = "grid"; work.innerHTML = "";
+  const narrow = window.matchMedia("(max-width: 560px)").matches;
+  const seq = narrow ? [0, 1, 2, 3, 4, 5] : [0, 3, 1, 4, 2, 5];
+  const sg = Object.assign(document.createElement("div"), { className: "label", textContent: "Singulier" });
+  const pl = Object.assign(document.createElement("div"), { className: "label", textContent: "Pluriel" });
+  if (!narrow) work.append(sg, pl);
+  seq.forEach(i => {
+    if (narrow && i === 0) work.append(sg);
+    if (narrow && i === 3) work.append(pl);
+    const row = document.createElement("div"); row.className = "row";
+    const lab = Object.assign(document.createElement("label"), { className: "pron", htmlFor: "f" + i, textContent: p[i] });
+    const cell = document.createElement("div"); cell.className = "cell";
+    if (S.phase === "learn") {
+      const m = document.createElement("span");
+      if (hidden.includes(i)) { m.className = "model hid"; m.textContent = "from memory"; }
+      else { m.className = "model"; m.append(formImage(forms[i], "--accent", `Form to copy for ${p[i]}: ${forms[i]}`)); }
+      cell.append(m);
+    }
+    const inp = makeInput("f" + i);
+    if (S.phase === "mastered") { inp.value = forms[i]; inp.readOnly = true; inp.classList.add("right"); }
+    const ans = Object.assign(document.createElement("span"), { className: "answer", id: "a" + i, hidden: true });
+    cell.append(inp, ans);
+    row.append(lab, cell);
+    work.append(row);
+  });
+}
+
+function buildLines() {
+  const v = S.verb;
+  work.className = "lines"; work.innerHTML = "";
+  S.wrong.slice().sort().forEach(i => {
+    const row = document.createElement("div"); row.className = "lines-row";
+    const full = withPron(shortPronoun(v, i), VERBS[v].forms[i]);
+    const head = document.createElement("div"); head.className = "lines-head";
+    head.append("Write ", formImage(full, "--accent", `Form to write: ${full}`, 19), ` ${SETTINGS.CORRECTION_LINES} times:`);
+    row.append(head);
+    const box = document.createElement("div"); box.className = "lines-inputs";
+    for (let k = 0; k < SETTINGS.CORRECTION_LINES; k++) {
+      const inp = makeInput(`l${i}_${k}`); inp.dataset.i = i;
+      inp.setAttribute("aria-label", `${withPron(shortPronoun(v, i), VERBS[v].forms[i])}, line ${k + 1}`);
+      box.append(inp);
+    }
+    row.append(box); work.append(row);
+  });
+}
+
+function defaultMessage() {
+  if (S.phase === "learn") {
+    return S.stage === 0
+      ? "<strong>Step 1: copy the table.</strong>Type each form shown above its box."
+      : `<strong>Step ${S.stage + 1}: ${FADE[S.stage]} forms are hidden.</strong>Fill those in from memory and copy the rest.`;
+  }
+  if (S.phase === "test") return `<strong>Type the whole table from memory.</strong>Perfect runs in a row: ${S.streak} of ${N}.`;
+  if (S.phase === "lines") return `<strong>Write your lines.</strong>Type each form you missed ${SETTINGS.CORRECTION_LINES} times. Then your streak starts again.`;
+  return `<strong>You've mastered ${S.verb}!</strong>Choose another verb from the menu.`;
+}
+
+function render(message, kind) {
+  $("verbTitle").textContent = S.verb;
+  renderMenu(); renderSteps(); renderTries();
+  if (S.phase === "lines") buildLines(); else buildGrid();
+  checkBtn.hidden = S.phase === "mastered";
+  checkBtn.textContent = S.phase === "lines" ? "Check lines" : "Check";
+  replayBtn.hidden = true;
+  if (S.phase === "learn" && S.stage === 0) showListen("🔊 Hear the table");
+  if (S.phase === "lines" || S.phase === "mastered") showListen("🔊 Hear it again");
+  if (S.phase === "mastered") { showNext("Practice it again anyway", () => { S.phase = "test"; S.streak = 0; tries = 0; save(); render(); }, true); }
+  else nextBtn.hidden = true;
+  setFeedback(kind || (S.phase === "mastered" ? "good" : "info"), message || defaultMessage());
+  const first = work.querySelector("input:not([readonly])");
+  if (first && !$("panelTables").hidden) first.focus({ preventScroll: true });
+}
+
+function showListen(label) {
+  if (!("speechSynthesis" in window)) return;
+  replayBtn.textContent = label; replayBtn.hidden = false;
+}
+
+function showNext(label, action, ghost) {
+  nextBtn.textContent = label; nextBtn.className = ghost ? "btn ghost" : "btn";
+  nextBtn.hidden = false; nextAction = action;
+}
+
+function gridInputs() { return [0, 1, 2, 3, 4, 5].map(i => $("f" + i)); }
+
+function check() {
+  if (S.phase === "learn") return checkLearn();
+  if (S.phase === "test") return checkTest();
+  if (S.phase === "lines") return checkLines();
+}
+
+function markInputs(inputs, results) {
+  inputs.forEach((inp, k) => { inp.classList.toggle("right", results[k]); inp.classList.toggle("wrong", !results[k]); });
+}
+
+function checkLearn() {
+  const inputs = gridInputs();
+  if (inputs.some(inp => !inp.value.trim())) return setFeedback("info", "Fill in all six boxes before checking.");
+  if (!S.started) S.started = true;
+  const res = inputs.map((inp, i) => isRight(inp.value, S.verb, i));
+  if (res.every(Boolean)) {
+    S.stage++;
+    if (S.stage >= FADE.length) {
+      S.phase = "test"; tries = 0; save();
+      render(`<strong>Well done.</strong>Now type the whole table from memory. You need ${N} perfect runs in a row.`, "good");
+    } else {
+      save();
+      render(`<strong>Good.</strong>Now ${FADE[S.stage]} forms are hidden. Fill those in from memory.`, "good");
+    }
+    return;
+  }
+  save(); renderMenu();
+  markInputs(inputs, res);
+  setFeedback("bad", "<strong>Some forms don't match.</strong>Fix the boxes in red, then check again.");
+}
+
+function checkTest() {
+  const v = S.verb, forms = VERBS[v].forms, inputs = gridInputs();
+  if (inputs.some(inp => !inp.value.trim())) return setFeedback("info", "Fill in all six boxes before checking.");
+  S.started = true;
+  const res = inputs.map((inp, i) => isRight(inp.value, v, i));
+  tries++;
+
+  if (res.every(Boolean)) {
+    if (tries === 1 && S.wrong.length === 0) {
+      S.streak++; tries = 0;
+      if (S.streak >= N) {
+        S.phase = "mastered";
+        if (!S.mastered.includes(v)) S.mastered.push(v);
+        save();
+        return render(`<strong>Bravo ! You've mastered ${v}.</strong>${N} perfect runs in a row. The verb menu is unlocked.`, "good");
+      }
+      save();
+      render(`<strong>Perfect run! ${S.streak} of ${N} in a row.</strong>The table is cleared. Type it again from memory.`, "good");
+      return showListen("🔊 Hear it again");
+    }
+    S.phase = "lines"; S.streak = 0; save();
+    return render(`<strong>Correct on try ${tries}.</strong>You missed some forms along the way, so write each one ${SETTINGS.CORRECTION_LINES} times. Then your streak starts again from 0.`, "info");
+  }
+
+  res.forEach((r, i) => { if (!r && !S.wrong.includes(i)) S.wrong.push(i); });
+  S.streak = 0; save();
+  renderSteps(); renderTries(); renderMenu();
+
+  if (tries === 1) {
+    setFeedback("bad", "<strong>There are errors.</strong>Your streak is back to 0. Look over your answers and try again.");
+  } else if (tries === 2) {
+    const ok = speak(v);
+    setFeedback("bad", ok
+      ? "<strong>There are still errors.</strong>Listen to the correct conjugation, then try again."
+      : "<strong>There are still errors.</strong>Audio isn't available in this browser (try Chrome or Edge). Try again.");
+    if (ok) showListen("🔊 Listen again");
+  } else {
+    inputs.forEach((inp, i) => {
+      inp.readOnly = true;
+      if (!res[i]) { const a = $("a" + i); a.textContent = "→"; a.append(formImage(forms[i], "--good", `Correct form: ${forms[i]}`)); a.hidden = false; }
+    });
+    markInputs(inputs, res);
+    S.phase = "lines"; save();
+    checkBtn.hidden = true; showListen("🔊 Hear it again");
+    showNext("Write my lines", () => { tries = 0; render(); });
+    setFeedback("bad", `<strong>Here are the correct answers.</strong>Study them, then write each missed form ${SETTINGS.CORRECTION_LINES} times.`);
+  }
+}
+
+function checkLines() {
+  const inputs = [...work.querySelectorAll("input")];
+  if (inputs.some(inp => !inp.value.trim())) return setFeedback("info", "Fill in every line before checking.");
+  const res = inputs.map(inp => isRight(inp.value, S.verb, +inp.dataset.i));
+  if (res.every(Boolean)) {
+    S.wrong = []; S.phase = "test"; tries = 0; save();
+    return render(`<strong>Lines done.</strong>Now the whole table again from memory. Perfect runs in a row: 0 of ${N}.`, "good");
+  }
+  markInputs(inputs, res);
+  setFeedback("bad", "<strong>Some lines don't match.</strong>Fix the boxes in red, then check again.");
+}
+
+verbSel.addEventListener("change", () => {
+  if (isLocked()) { verbSel.value = S.verb; return; }
+  S.verb = verbSel.value; S.started = false; S.wrong = []; S.streak = 0; tries = 0;
+  if (S.mastered.includes(S.verb)) { S.phase = "test"; }
+  else { S.phase = "learn"; S.stage = 0; fadeOrder = shuffle([0, 1, 2, 3, 4, 5]); }
+  save(); render();
+  if (S.phase === "learn") speak(S.verb); // read the table aloud for the copy step
+});
+checkBtn.addEventListener("click", check);
+replayBtn.addEventListener("click", () => speak(S.verb));
+nextBtn.addEventListener("click", () => nextAction && nextAction());
+window.matchMedia("(max-width: 560px)").addEventListener("change", () => {
+  const typed = [...work.querySelectorAll("input")].some(i => i.value && !i.readOnly);
+  if (!typed && S.phase !== "lines") buildGrid();
+});
+
+/* ============================================================
+   RAPID FIRE
+   ============================================================ */
+const D = { queue: [], total: 0, firstRight: 0, missed: [], retype: false, start: 0, lastSaid: "" };
+function drillSay(text) {
+  D.lastSaid = text;
+  if (speakText(text)) $("drillListen").hidden = false;
+}
+const drillInput = $("drillInput");
+trackInput(drillInput);
+blockPaste(drillInput);
+
+VERB_NAMES.forEach(v => {
+  const l = document.createElement("label"); l.className = "chip";
+  l.innerHTML = `<input type="checkbox" value="${v}" checked id="dv-${v}"> ${v}`;
+  $("drillVerbs").append(l);
+});
+SETTINGS.DRILL_LENGTHS.forEach(n => $("drillLength").add(new Option(n + " prompts", n)));
+$("drillLength").value = SETTINGS.DRILL_LENGTHS[1] ?? SETTINGS.DRILL_LENGTHS[0];
+
+function drillPron(v, i) {
+  if (i === 0) return VERBS[v].elide ? "j'" : "je";
+  if (i === 2) return rnd(["il", "elle", "on"]);
+  if (i === 5) return rnd(["ils", "elles"]);
+  return ["", "tu", "", "nous", "vous", ""][i];
+}
+function showDrill(which) {
+  $("drillSetup").hidden = which !== "setup";
+  $("drillPlay").hidden = which !== "play";
+  $("drillResults").hidden = which !== "results";
+}
+function drillFeedback(kind, html) { const f = $("drillFeedback"); f.className = "feedback " + kind; f.innerHTML = html; }
+
+function startDrill() {
+  const verbs = [...$("drillVerbs").querySelectorAll("input:checked")].map(c => c.value);
+  if (!verbs.length) { const m = $("drillSetupMsg"); m.hidden = false; m.textContent = "Choose at least one verb."; return; }
+  $("drillSetupMsg").hidden = true;
+  const len = +$("drillLength").value;
+  D.queue = []; let prev = "";
+  while (D.queue.length < len) {
+    const v = rnd(verbs), i = Math.floor(Math.random() * 6);
+    if (v + i === prev && verbs.length * 6 > 1) continue;
+    prev = v + i; D.queue.push({ v, i, p: drillPron(v, i), repeat: false });
+  }
+  D.total = len; D.firstRight = 0; D.missed = []; D.retype = false; D.start = Date.now();
+  D.lastSaid = ""; $("drillListen").hidden = true;
+  showDrill("play");
+  drillFeedback("info", "Type the form and press Enter.");
+  showItem();
+}
+
+function showItem() {
+  const it = D.queue[0];
+  $("drillPron").textContent = it.p;
+  $("drillInf").textContent = it.v;
+  $("drillLeft").textContent = D.queue.length;
+  $("drillScore").textContent = D.firstRight;
+  drillInput.value = ""; drillInput.classList.remove("right", "wrong");
+  drillInput.focus();
+}
+
+function drillSubmit() {
+  if (!D.queue.length) return;
+  const it = D.queue[0], val = drillInput.value;
+  if (!val.trim()) return;
+  const full = withPron(it.p, VERBS[it.v].forms[it.i]);
+  if (D.retype) {
+    if (isRight(val, it.v, it.i)) {
+      D.retype = false; D.queue.shift();
+      drillFeedback("info", "Good. That one will come back later in the round.");
+      return nextItem();
+    }
+    drillInput.classList.add("wrong"); drillInput.select();
+    drillFeedback("bad", "<strong>Not yet.</strong>");
+    return $("drillFeedback").append("Type ", formImage(full, "--ink", `Correct answer: ${full}`), " exactly to continue.");
+  }
+  if (isRight(val, it.v, it.i)) {
+    if (!it.repeat) D.firstRight++;
+    D.queue.shift();
+    drillFeedback("good", `✓ ${full}`);
+    drillSay(full);
+    return nextItem();
+  }
+  D.retype = true;
+  if (!it.repeat && !D.missed.includes(full)) D.missed.push(full);
+  D.queue.splice(Math.min(4, D.queue.length), 0, { ...it, repeat: true });
+  drillInput.value = ""; drillInput.classList.add("wrong");
+  drillFeedback("bad", "");
+  const head = document.createElement("strong");
+  head.append("The answer is ", formImage(full, "--ink", `Correct answer: ${full}`), ".");
+  $("drillFeedback").append(head, "Type it correctly to continue.");
+  drillSay(full);
+  $("drillLeft").textContent = D.queue.length;
+}
+
+function nextItem() { if (D.queue.length) showItem(); else finishDrill(); }
+
+function finishDrill() {
+  const secs = Math.round((Date.now() - D.start) / 1000);
+  $("resScore").textContent = `${D.firstRight} / ${D.total}`;
+  $("resTime").textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
+  $("resMissed").innerHTML = D.missed.length
+    ? `<div class="label" style="margin-bottom:6px">Forms to review</div><ul class="missed">${D.missed.map(m => `<li>${m}</li>`).join("")}</ul>`
+    : `<div class="feedback good">No misses this round. Excellent!</div>`;
+  showDrill("results");
+}
+
+$("drillStart").addEventListener("click", startDrill);
+$("drillAgain").addEventListener("click", startDrill);
+$("drillBack").addEventListener("click", () => showDrill("setup"));
+$("drillQuit").addEventListener("click", () => { D.queue = []; showDrill("setup"); });
+$("drillSubmit").addEventListener("click", drillSubmit);
+$("drillListen").addEventListener("click", () => { if (D.lastSaid) speakText(D.lastSaid); drillInput.focus(); });
+drillInput.addEventListener("keydown", e => { if (e.key === "Enter") drillSubmit(); });
+
+/* ============================================================
+   TABS + start
+   ============================================================ */
+function selectTab(which) {
+  const tables = which === "tables";
+  $("tabTables").setAttribute("aria-selected", tables);
+  $("tabDrill").setAttribute("aria-selected", !tables);
+  $("panelTables").hidden = !tables;
+  $("panelDrill").hidden = tables;
+}
+$("tabTables").addEventListener("click", () => selectTab("tables"));
+$("tabDrill").addEventListener("click", () => selectTab("drill"));
+
+if ("speechSynthesis" in window) speechSynthesis.getVoices();
+buildAccents();
+if (S.phase === "lines" && !S.wrong.length) S.phase = "test";
+/* Wait for the web font so the pictured forms use it */
+(document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]) : Promise.resolve()).then(() => render());
+</script>
+</body>
+</html>
